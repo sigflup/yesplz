@@ -1,0 +1,29 @@
+CC= @CC@ 
+LEX= lex
+
+PREFIX=@PREFIX@
+CFLAGS = @CFLAGS@ @DEFS@ 
+LDFLAGS = @LDFLAGS@
+LIBS = @LIBS@
+
+OBJS=main.o shot.o list.o multiVis.o clientwin.o lex.yy.o 
+
+yesplz: ${OBJS}
+	${CC} -o yesplz ${OBJS} ${LDFLAGS} ${LIBS}
+
+%.o: %.c
+	${CC} -c ${CFLAGS} -o $@ $<
+
+lex.yy.c: lexxer.l
+	${LEX} lexxer.l
+
+install: yesplz
+	chmod +x ./install.sh
+	./install.sh yesplz ${PREFIX}/bin/yesplz
+
+uninstall:
+	rm -f ${PREFIX}/bin/yesplz
+
+
+clean:
+	rm -f ${OBJS} yesplz lex.yy.c

@@ -1,0 +1,101 @@
+ 
+AC_REVISION($Revision: 1 $)
+AC_INIT(yesplz,dec_19_2011)
+
+
+VERSION=dec_19_2011
+
+AC_DEFUN(AC_PROGRAM_SOURCE,
+[AC_REQUIRE([AC_PROG_CPP])AC_PROVIDE([$0])cat > conftest.c <<EOF
+#include "confdefs.h"
+[$1]
+_CUT_HERE_
+[$2]
+EOF
+eval "$ac_cpp conftest.c 2>&5 | sed -e '1,/_CUT_HERE_/d' -e 's/ //g' > conftest.out"
+. ./conftest.out
+rm -f conftest*
+])dnl
+dnl
+define(AC_NOTE,
+[echo "$1" 1>&AC_FD_MSG
+])dnl
+
+
+AC_SUBST(VERSION)
+AC_PREFIX_PROGRAM(yesplz)
+AC_PREFIX_PROGRAM(gzip)
+
+old_CFLAGS="$CFLAGS"
+AC_PROG_CC
+CFLAGS=" "
+AC_PROG_CPP
+AC_PROG_GCC_TRADITIONAL
+AC_ISC_POSIX
+
+AC_TRY_RUN(main(){exit(0);},,[
+if test $CC != cc ; then
+CC=cc
+export CC
+exec $0 $configure_args
+fi
+])
+
+AC_TRY_RUN(main(){exit(0);},,
+exec 5>&2
+eval $ac_link
+AC_NOTE(CC=$CC; CFLAGS=$CFLAGS; LIBS=$LIBS;)
+AC_NOTE($ac_compile)
+AC_MSG_ERROR(Can't run the compiler - sorry))
+
+AC_TRY_RUN([
+main()
+{
+  int __something_strange_();
+  __something_strange_(0);
+}
+],AC_MSG_ERROR(Your compiler does not set the exit status - sorry))
+
+AC_PROG_INSTALL
+
+if test -f etc/toolcheck; then
+AC_CHECKING(for buggy tools)
+sh etc/toolcheck 1>&AC_FD_MSG
+fi
+
+
+
+AC_CHECK_PROG([HAVELEX], [lex], "true", "false")
+if test "$HAVELEX" = "false"; then
+ echo " "
+ echo "**********************************************"
+ echo "you don't seem to have lex/flex on your system"
+ exit;
+fi
+
+HRR_CHECK_HEAD(Xlib.h,  X11/, no_x11)
+HRR_CHECK_LIB(X11,XOpenDisplay)
+
+HRR_CHECK_HEAD(jpeglib.h,  /, [no libjpeg header])
+HRR_CHECK_LIB(jpeg,jpeg_set_defaults)
+
+HRR_CHECK_HEAD(pthread.h,  /, [no pthread header])
+HRR_CHECK_LIB(pthread,pthread_kill)
+
+
+if test "$prefix" = "/"; then
+ PREFIX=/usr/
+else
+ PREFIX=$prefix
+fi
+
+AC_SUBST(PREFIX)
+
+dnl 
+dnl *** wow, hope all that worked 
+dnl
+
+CFLAGS=$CFLAGS\ -w
+
+AC_OUTPUT(Makefile)
+
