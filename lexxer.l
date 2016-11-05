@@ -33,8 +33,11 @@ int msg_data_alloc;
 #define MODE_CONFIG	2
 #define MODE_TOKENS	3
 #define MODE_ALBUM_ID	4
+#define MODE_PID_ID	5
 
 int lex_mode = MODE_HTTP;
+
+char *pid_number;
 
 int sock;
 struct sockaddr_in server;
@@ -88,6 +91,7 @@ int new_var(msg_t *msg, char *var, int var_len, char *value, int value_len);
   case MODE_TOKENS: \
   case MODE_ALBUM: \
   case MODE_ALBUM_ID: \
+  case MODE_PID_ID: \
    c = current_msg->data[msg_pos++]; \
    if(msg_pos > current_msg->len) \
     result = YY_NULL; \
@@ -161,6 +165,7 @@ int new_var(msg_t *msg, char *var, int var_len, char *value, int value_len);
 %x album_lex
 %x token_lex
 %x album_id_lex
+%x pid_id_lex
 %x cat_lex
 %x cat_lex_b
 %x config_file
@@ -322,6 +327,11 @@ CSTRING	(\".+\")|[^\0x20\n<EOF>]+
  }
 }
 
+<pid_id_lex>"displayimage.php?pid="{DIGIT}+ {
+ pid_number = &yytext[21];
+ return atoi(pid_number);
+}
+
 <album_id_lex>"<option value=\""{DIGIT}+"\" selected=\"selected\">* My gallery *</option>" {
  return -1;
 }
@@ -448,6 +458,8 @@ CSTRING	(\".+\")|[^\0x20\n<EOF>]+
 <album_lex>.|\n	{ }
 <token_lex>.|\n { } 
 <album_id_lex>.|\n {  }
+<pid_id_lex>.|\n {  }
+
 <cat_lex>.|\n { }
 <*>.|\n {
 // errors = STR;
@@ -675,6 +687,14 @@ int find_album_id(msg_t *msg) {
  return yylex();
 }
 
+int find_pid(msg_t *msg) {
+ current_msg = msg;
+ msg_pos = 0;
+ yyrestart(0);
+ BEGIN(pid_id_lex);
+ lex_mode = MODE_PID_ID;
+ return yylex();
+}
 
 void get_tokens(msg_t *msg) {
  current_msg = msg;

@@ -57,6 +57,7 @@ char *get_var(msg_t *msg, char *var);
 void dump_vars(msg_t *msg);
 void do_config(char *filename);
 int find_album_id(msg_t *msg);
+int find_pid(msg_t *msg);
 /*
   Thank you for your attention
 -----BEGIN PGP SIGNATURE-----

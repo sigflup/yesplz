@@ -460,6 +460,8 @@ void args(int argc, char **argv, int save) {
  char *home;
  // XXX do this better-- strncmp is a silly function 
 
+ desc="yesplz image";
+
  for(i=1;i<argc;i++) {
   found = 0;
   if(strncmp(argv[i], "-t", MAXSTR)==0) {
@@ -631,6 +633,7 @@ int main(int argc, char **argv ) {
  unsigned char *jpeg_data;
  msg_t *msg;
  char *str;
+ char buf[1024];
  char filename[FILENAME_LEN];
 
  char *jmp_location;
@@ -879,16 +882,19 @@ int main(int argc, char **argv ) {
 
  FINISH(" ");
 
+ snprintf(buf, 1024, "\r\33[Khttp://unixporn.ml/displayimage.php?pid=%d&fullsize=1\n", find_pid(msg));
+
+
  alarm(timeout_sec);
  REPORT("\r\33[Klogout");
  START;
  msg_printf(LOGOUT);
  print_cookies(cookies);
  msg_printf("\r\n");
- if(ask("www.unixporn.ml",80, HEAD)==0)
+ msg = ask("www.unixporn.ml",80, BODY);
+ if(msg==0)
   FATAL("<-failed\n");
- free_msg(msg);
- FINISH("\r\33[K^>'_'<^\n");
+ FINISH(buf);
 
  return 0;
 }
